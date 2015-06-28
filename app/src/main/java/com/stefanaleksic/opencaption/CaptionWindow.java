@@ -6,6 +6,7 @@ import wei.mark.standout.ui.Window;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.MediaRecorder;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -29,6 +30,7 @@ public class CaptionWindow extends StandOutWindow{
     @Override
     public void createAndAttachView(int id, FrameLayout frame) {
         // create a new layout from body.xml
+        
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.simple, frame, true);
     }
@@ -36,7 +38,7 @@ public class CaptionWindow extends StandOutWindow{
     // the window will be centered
     @Override
     public StandOutLayoutParams getParams(int id, Window window) {
-        return new StandOutLayoutParams(id, 250, 300,
+        return new StandOutLayoutParams(id, 1100, 200,
                 StandOutLayoutParams.CENTER, StandOutLayoutParams.CENTER);
     }
 
