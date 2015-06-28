@@ -31,6 +31,8 @@ import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static wei.mark.standout.StandOutWindow.*;
 
@@ -38,203 +40,12 @@ import static wei.mark.standout.StandOutWindow.*;
  * Created by stefan on 6/27/15.
  */
 public class CaptionWindow extends StandOutWindow{
-
-    protected static AudioManager mAudioManager;
-    protected static SpeechRecognizer mSpeechRecognizer;
-    protected static Intent mSpeechRecognizerIntent;
-    protected final Messenger mServerMessenger = new Messenger(new IncomingHandler(this));
-
-    protected static boolean mIsListening;
-    protected static volatile boolean mIsCountDownOn;
-    private static boolean mIsStreamSolo;
-    private static TextView captionView;
-
-    static final int MSG_RECOGNIZER_START_LISTENING = 1;
-    static final int MSG_RECOGNIZER_CANCEL = 2;
-
-    @Override
-    public void onCreate()
-    {
+    TextView captionView;
+    public Handler handler;
+    public void onCreate() {
+        handler = new Handler();
         super.onCreate();
-
     }
-
-    protected static class IncomingHandler extends Handler
-    {
-        private WeakReference<CaptionWindow> mtarget;
-
-        IncomingHandler(CaptionWindow target)
-        {
-            mtarget = new WeakReference<CaptionWindow>(target);
-        }
-
-
-        @Override
-        public void handleMessage(Message msg)
-        {
-            final CaptionWindow target = mtarget.get();
-
-            switch (msg.what)
-            {
-                case MSG_RECOGNIZER_START_LISTENING:
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-                    {
-                        // turn off beep sound
-                        if (!mIsStreamSolo)
-                        {
-                            mAudioManager.setStreamSolo(AudioManager.STREAM_VOICE_CALL, true);
-                            mIsStreamSolo = true;
-                        }
-                    }
-                    if (!target.mIsListening)
-                    {
-                        target.mSpeechRecognizer.startListening(target.mSpeechRecognizerIntent);
-                        target.mIsListening = true;
-                        //Log.d(TAG, "message start listening"); //$NON-NLS-1$
-                    }
-                    break;
-
-                case MSG_RECOGNIZER_CANCEL:
-                    if (mIsStreamSolo)
-                    {
-                        mAudioManager.setStreamSolo(AudioManager.STREAM_VOICE_CALL, false);
-                        mIsStreamSolo = false;
-                    }
-                    target.mSpeechRecognizer.cancel();
-                    target.mIsListening = false;
-                    //Log.d(TAG, "message canceled recognizer"); //$NON-NLS-1$
-                    break;
-            }
-        }
-    }
-
-    protected class SpeechRecognitionListener implements RecognitionListener
-    {
-
-        @Override
-        public void onBeginningOfSpeech()
-        {
-            // speech input will be processed, so there is no need for count down anymore
-            if (mIsCountDownOn)
-            {
-                mIsCountDownOn = false;
-                mNoSpeechCountDown.cancel();
-            }
-            //Log.d(TAG, "onBeginingOfSpeech"); //$NON-NLS-1$
-        }
-
-        @Override
-        public void onBufferReceived(byte[] buffer)
-        {
-
-        }
-
-        @Override
-        public void onEndOfSpeech()
-        {
-            //Log.d(TAG, "onEndOfSpeech"); //$NON-NLS-1$
-        }
-
-        @Override
-        public void onError(int error)
-        {
-            if (mIsCountDownOn)
-            {
-                mIsCountDownOn = false;
-                mNoSpeechCountDown.cancel();
-            }
-            mIsListening = false;
-            Message message = Message.obtain(null, MSG_RECOGNIZER_START_LISTENING);
-            try
-            {
-                mServerMessenger.send(message);
-            }
-            catch (RemoteException e)
-            {
-
-            }
-            //Log.d(TAG, "error = " + error); //$NON-NLS-1$
-        }
-
-        @Override
-        public void onEvent(int eventType, Bundle params)
-        {
-
-        }
-
-        @Override
-        public void onPartialResults(Bundle partialResults)
-        {
-            ArrayList<String> results =
-                    partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-
-            String b = "";
-            if (results != null) {
-                if(results.size() > 6){
-                    results.clear();
-                }
-                for (String p : results) {
-                    b += p;
-                }
-            }
-            captionView.setText(b);
-
-        }
-
-        @Override
-        public void onReadyForSpeech(Bundle params)
-        {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-            {
-                mIsCountDownOn = true;
-                mNoSpeechCountDown.start();
-
-            }
-        }
-
-        @Override
-        public void onResults(Bundle results)
-        {
-            //Log.d(TAG, "onResults"); //$NON-NLS-1$
-
-        }
-
-        @Override
-        public void onRmsChanged(float rmsdB)
-        {
-
-        }
-
-    }
-    protected CountDownTimer mNoSpeechCountDown = new CountDownTimer(5000, 5000)
-        {
-
-            @Override
-            public void onTick(long millisUntilFinished)
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void onFinish()
-            {
-                mIsCountDownOn = false;
-                Message message = Message.obtain(null, MSG_RECOGNIZER_CANCEL);
-                try
-                {
-                    mServerMessenger.send(message);
-                    message = Message.obtain(null, MSG_RECOGNIZER_START_LISTENING);
-                    mServerMessenger.send(message);
-                }
-                catch (RemoteException e)
-                {
-
-                }
-            }
-        };
-
     @Override
     public String getAppName() {
         return "SimpleWindow";
@@ -248,19 +59,123 @@ public class CaptionWindow extends StandOutWindow{
     @Override
     public void createAndAttachView(int id, FrameLayout frame) {
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        captionView = (TextView)inflater.inflate(R.layout.simple, frame, true);
+        final View v = inflater.inflate(R.layout.simple, frame, true);
+        captionView = (TextView) v.findViewById(R.id.textView2);
         // Count down timer for Jelly Bean work around
-
-        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
-        mSpeechRecognizer.setRecognitionListener(new SpeechRecognitionListener());
-        mSpeechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+        final SpeechRecognizer speechRec = SpeechRecognizer.createSpeechRecognizer(this);
+        final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
-                this.getPackageName());
+        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, "VoiceIME");
+        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 10000L);
+
+        speechRec.startListening(intent);
+        final RecognitionListener someListener = new RecognitionListener() {
+            @Override
+            public void onReadyForSpeech(Bundle bundle) {
+
+            }
+
+            @Override
+            public void onBeginningOfSpeech() {
+
+            }
+
+            @Override
+            public void onRmsChanged(float v) {
+
+            }
+
+            @Override
+            public void onBufferReceived(byte[] bytes) {
+
+            }
+
+            @Override
+            public void onEndOfSpeech() {
+
+            }
+
+            @Override
+            public void onError(int i) {
+
+            }
+
+            @Override
+            public void onResults(Bundle bundle) {
+
+                String someString = "";
+                List<String> listOfWords = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+
+                someString = listOfWords.get(0);
+                try {
+
+                    someString = URLEncoder.encode(someString, "UTF-8");
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    Thread.sleep(100);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                speechRec.stopListening();
+                speechRec.setRecognitionListener(this);
+                speechRec.startListening(intent);
+            }
+
+            public void onPartialResults(Bundle partialResults) {
+                // WARNING: The following is specific to Google Voice Search
+                ArrayList<String> results =
+                        partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+                String b = "";
+                if (results != null) {
+                    if (results.size() > 6) {
+                        results.clear();
+                    }
+                    for (String p : results) {
+                        b += p;
+                    }
+                }
+                captionView.setText(b);
+
+            }
+
+            @Override
+            public void onEvent(int i, Bundle bundle) {
+
+            }
+        };
+        speechRec.setRecognitionListener(someListener);
+
+//        new Timer().scheduleAtFixedRate(new TimerTask() {
+//            @Override
+//            public void run() {
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        speechRec.stopListening();
+//                        speechRec.setRecognitionListener(someListener);
+//                        speechRec.startListening(intent);
+//                    }
+//                });
+//
+//            }
+//        }, 0, 5000);
+
 
         }
+
+    private void runOnUiThread(Runnable runnable){
+        handler.post(runnable);
+    }
 
     // the window will be centered
     @Override
