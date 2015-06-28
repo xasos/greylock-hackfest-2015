@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/home/stefan/Desktop/OpenCaption2/app/build/intermediates/exploded-aar/OpenCaption2/standOut/unspecified/jars/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="df2b9909d19185e93df4ba5108f5a451393f950f">
+        <dex dex="/home/stefan/Desktop/OpenCaption2/app/build/intermediates/pre-dexed/debug/classes-2e51410aa1c31fa65572fc02961a7294b6d191e6.jar" />
+    </item>
+    <item
+        jar="/home/stefan/Desktop/OpenCaption2/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/jars/libs/internal_impl-22.1.1.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="9e070ad32b2700b0343e8e0cccc437733d91ba3a">
+        <dex dex="/home/stefan/Desktop/OpenCaption2/app/build/intermediates/pre-dexed/debug/internal_impl-22.1.1-e2ba9f0d6fc926aefc95a911c5efc09ce3b36874.jar" />
+    </item>
+    <item
+        jar="/home/stefan/Android/Sdk/extras/android/m2repository/com/android/support/support-annotations/22.1.1/support-annotations-22.1.1.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="01d051a6bfb1218b1db2d3a5af0480ac2c25c42a">
+        <dex dex="/home/stefan/Desktop/OpenCaption2/app/build/intermediates/pre-dexed/debug/support-annotations-22.1.1-7a370b6a292db25f13d06d7eb2ae09ce90046800.jar" />
+    </item>
+    <item
+        jar="/home/stefan/Desktop/OpenCaption2/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="c95ba8152923e4872e86a82cfcba9a51c0214328">
+        <dex dex="/home/stefan/Desktop/OpenCaption2/app/build/intermediates/pre-dexed/debug/classes-368170d571bf66683b2b4ef41f59680ad657100c.jar" />
+    </item>
+    <item
+        jar="/home/stefan/Desktop/OpenCaption2/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="a3ff3c506644c820eb2bdf06e8339f72be578551">
+        <dex dex="/home/stefan/Desktop/OpenCaption2/app/build/intermediates/pre-dexed/debug/classes-f4dfb9e286fe75ab68f389e97e86566e0760429f.jar" />
+    </item>
+
+</items>
